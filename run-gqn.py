@@ -51,7 +51,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Create model and optimizer
-    model = GenerativeQueryNetwork(x_dim=3, v_dim=7, r_dim=256, h_dim=128, z_dim=64, L=8).to(device)
+    #model = GenerativeQueryNetwork(x_dim=3, v_dim=7, r_dim=256, h_dim=128, z_dim=64, L=8).to(device)
+    model = GenerativeQueryNetwork(x_dim=3, v_dim=7, r_dim=256, h_dim=64, z_dim=32, L=3).to(device)
     model = nn.DataParallel(model) if args.data_parallel else model
 
     optimizer = torch.optim.Adam(model.parameters(), lr=5 * 10 ** (-5))
@@ -114,9 +115,10 @@ if __name__ == '__main__':
     # Model checkpointing
     checkpoint_handler = ModelCheckpoint("./", "checkpoint", save_interval=1, n_saved=3,
                                          require_empty=False)
-    trainer.add_event_handler(event_name=Events.EPOCH_COMPLETED, handler=checkpoint_handler,
-                              to_save={'model': model.state_dict, 'optimizer': optimizer.state_dict,
-                                       'annealers': (sigma_scheme.data, mu_scheme.data)})
+    #trainer.add_event_handler(event_name=Events.EPOCH_COMPLETED, handler=checkpoint_handler,
+    #                          to_save={'model': model.state_dict, 'optimizer': optimizer.state_dict,
+    #                                   'annealers': (sigma_scheme.data, mu_scheme.data)})
+    trainer.add_event_handler(event_name=Events.EPOCH_COMPLETED, handler=checkpoint_handler, to_save={'model': model, 'optimizer': optimizer})
 
     timer = Timer(average=True).attach(trainer, start=Events.EPOCH_STARTED, resume=Events.ITERATION_STARTED,
                  pause=Events.ITERATION_COMPLETED, step=Events.ITERATION_COMPLETED)
